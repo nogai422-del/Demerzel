@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактировать словарь матов</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container-centered">
+        <h2>Редактировать словарь матов:</h2>
+
+        {% if saved %}
+            <p style="margin: 10px 0; color: green;">Сохранено ✅</p>
+        {% endif %}
+
+        <p style="text-align:left; margin: 10px 0;">
+            Формат ввода: слова через пробел.<br>
+            При сохранении сайт автоматически приводит все слова к нижнему регистру, заменяет букву ё на е и убирает дубли.<br>
+            Не рекомендуется добавлять слова, смысл которых зависит от контекста, например сука, урод, даун и прочие, которые могут употребляться не только как оскорбления.<br>
+            Не нужно вручную добавлять варианты обхода: бот сам пытается распознать обход цензуры через спецсимволы и латиницу в словах на кириллице (например, бл9дь или пизд@).
+        </p>
+
+        <form method="POST">
+            <div class="form-container">
+                <p style="text-align:left; margin: 0 0 6px 0;">
+                    Префиксы: блокируют все слова, которые начинаются с указанной основы (например, хуй блокирует хуйло).
+                </p>
+                <div class="form-group">
+                    <textarea
+                        name="prefixes"
+                        style="height: 28px; min-height: 28px; padding: 4px 8px; line-height: 1.2;"
+                        spellcheck="false"
+                    >{{ prefixes_content | e }}</textarea>
+                </div>
+
+                <p style="text-align:left; margin: 10px 0 6px 0;">
+                    Точные слова: блокируют только полное слово (например, манда), без срабатывания на мандала, мандат и прочие.
+                </p>
+                <div class="form-group">
+                    <textarea
+                        name="exact_words"
+                        style="height: 28px; min-height: 28px; padding: 4px 8px; line-height: 1.2;"
+                        spellcheck="false"
+                    >{{ exact_words_content | e }}</textarea>
+                </div>
+            </div>
+
+            <button type="submit">Сохранить</button>
+        </form>
+
+        <p style="margin-top: 20px;">
+            <a href="/">На главную</a> |
+            <a href="/logout">Выйти</a>
+        </p>
+    </div>
+
+    <script src="{{ url_for('static', filename='autoresize.js') }}"></script>
+
+    <script>
+      (function () {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('saved')) {
+          url.searchParams.delete('saved');
+          history.replaceState({}, '', url.toString());
+        }
+      })();
+    </script>
+</body>
+</html>

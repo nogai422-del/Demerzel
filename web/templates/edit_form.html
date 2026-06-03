@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактировать блок вопросов</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container-centered">
+        <h2>Редактировать блок вопросов:</h2>
+
+        {% if saved %}
+            <p style="margin: 10px 0; color: green;">Сохранено ✅</p>
+        {% endif %}
+
+        {% if csrf == "0" %}
+            <p style="margin: 10px 0; color: #c62828;">Ошибка CSRF. Обновите страницу и повторите действие.</p>
+        {% endif %}
+
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <textarea
+                name="content"
+                required
+                style="height: {{ textarea_height }}px;"
+                spellcheck="true"
+            >{{ content | e }}</textarea>
+            <br><br>
+            <button type="submit">Сохранить</button>
+        </form>
+
+        <p style="margin-top: 20px;">
+            <a href="/">На главную</a> |
+            <a href="/logout">Выйти</a>
+        </p>
+    </div>
+
+    <script src="{{ url_for('static', filename='autoresize.js') }}"></script>
+
+    <script>
+      (function () {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('saved')) {
+          url.searchParams.delete('saved');
+          history.replaceState({}, '', url.toString());
+        }
+      })();
+    </script>
+</body>
+</html>

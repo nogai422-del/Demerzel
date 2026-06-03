@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Настройка рассылки</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container-centered">
+    <h2>Рассылка: {{ campaign.name }}</h2>
+
+    {% if saved %}
+      <p style="margin: 10px 0; color: green;">Сохранено ✅</p>
+    {% endif %}
+    {% if error %}
+      <p style="margin: 10px 0; color: #c62828;">{{ error }}</p>
+    {% endif %}
+    {% if csrf == "0" %}
+      <p style="margin: 10px 0; color: #c62828;">Ошибка CSRF. Обновите страницу и повторите действие.</p>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" class="scheduled-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="form-container">
+        <div class="form-group">
+          <label>Название:</label>
+          <input type="text" name="name" value="{{ campaign.name }}" required>
+        </div>
+
+        <div class="form-group">
+          <label>Включено:</label>
+          <select name="is_enabled" id="is_enabled">
+            <option value="1" {% if campaign.is_enabled %}selected{% endif %}>Да</option>
+            <option value="0" {% if not campaign.is_enabled %}selected{% endif %}>Нет</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Режим времени:</label>
+          <select name="time_mode" id="time_mode">
+            <option value="fixed" {% if campaign.time_mode == "fixed" %}selected{% endif %}>Фиксированное время</option>
+            <option value="range" {% if campaign.time_mode == "range" %}selected{% endif %}>Случайно в диапазоне</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="fixed_time_wrap">
+          <label>Время:</label>
+          <input type="text" name="fixed_time" value="{{ campaign.fixed_time }}" placeholder="HH:MM">
+        </div>
+
+        <div class="form-group" id="range_start_wrap">
+          <label>С:</label>
+          <input type="text" name="range_start" value="{{ campaign.range_start }}" placeholder="HH:MM">
+        </div>
+
+        <div class="form-group" id="range_end_wrap">
+          <label>До:</label>
+          <input type="text" name="range_end" value="{{ campaign.range_end }}" placeholder="HH:MM">
+        </div>
+
+        <div class="form-group">
+          <label>Случайный вариант:</label>
+          <select id="random_variant_mode" name="random_variant_mode">
+            <option value="1" {% if random_variant_mode %}selected{% endif %}>Да</option>
+            <option value="0" {% if not random_variant_mode %}selected{% endif %}>Нет</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Картинки:</label>
+          <select id="enable_images" name="enable_images">
+            <option value="1" {% if enable_images %}selected{% endif %}>Да</option>
+            <option value="0" {% if not enable_images %}selected{% endif %}>Нет</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Кнопки:</label>
+          <select id="enable_buttons" name="enable_buttons">
+            <option value="1" {% if enable_buttons %}selected{% endif %}>Да</option>
+            <option value="0" {% if not enable_buttons %}selected{% endif %}>Нет</option>
+          </select>
+        </div>
+
+      </div>
+
+      <hr class="level-separator">
+      <h3 id="variants_header" style="text-align:center;">Варианты контента</h3>
+
+      <div id="variants_container" class="form-container">
+        {% for v in variants %}
+          <h4 style="text-align:center;" class="variant-title">Вариант {{ loop.index }}</h4>
+
+          <div class="form-group">
+            <label>Текст:</label>
+            <textarea name="variant[{{ loop.index0 }}][text]" placeholder="Текст сообщения">{{ v.text }}</textarea>
+          </div>
+
+          <div class="form-group button-field-row">
+            <label>Текст кнопки:</label>
+            <input type="text" name="variant[{{ loop.index0 }}][button_text]" value="{{ v.button_text }}">
+          </div>
+
+          <div class="form-group button-field-row">
+            <label>URL кнопки:</label>
+            <input type="text" name="variant[{{ loop.index0 }}][button_url]" value="{{ v.button_url }}" placeholder="https://">
+          </div>
+
+          <div class="image-fields">
+            <div class="form-group">
+              <label>Картинка:</label>
+              <div class="image-wrapper">
+                <div class="image-container" style="margin:0;">
+                  {% if v.image_path %}
+                    {% set filename = v.image_path.split('/')[-1] %}
+                    <img class="preview image"
+                         src="{{ url_for('image.serve_image') }}?type=scheduled&img={{ filename }}"
+                         style="max-width:200px; max-height:200px; margin-bottom:10px;">
+                    <button class="delete-button remove-image-btn" type="button"></button>
+                  {% else %}
+                    <img class="preview image"
+                         src=""
+                         style="max-width:200px; max-height:200px; margin-bottom:10px; display:none;">
+                    <button class="delete-button remove-image-btn" type="button" style="display:none;"></button>
+                  {% endif %}
+                </div>
+                <input class="upload-input"
+                       type="file"
+                       name="variant[{{ loop.index0 }}][upload]"
+                       accept=".jpg,.jpeg,.png,.gif"
+                       style="{% if v.image_path %}display:block;{% else %}display:inline-block;{% endif %}">
+                <input type="hidden" name="variant[{{ loop.index0 }}][image_path]" value="{{ v.image_path or '' }}">
+                <input type="hidden" name="variant[{{ loop.index0 }}][remove_image]" value="0" class="remove-image-flag">
+              </div>
+            </div>
+          </div>
+
+          <div class="remove-variant-row" style="text-align:center;">
+            <button type="button" class="button-delete remove-variant">Удалить вариант</button>
+          </div>
+
+          <hr class="level-separator variant-separator">
+        {% endfor %}
+      </div>
+
+      <button type="button" id="add_variant_btn">Добавить вариант</button>
+      <button type="submit">Сохранить</button>
+    </form>
+
+    <p>
+      <a href="/scheduled_messages">К списку рассылок</a> |
+      <a href="{{ url_for('index') }}">Главная</a> |
+      <a href="{{ url_for('auth.logout') }}">Выход</a>
+    </p>
+  </div>
+
+  <script src="{{ url_for('static', filename='autoresize.js') }}"></script>
+  <script>
+    function toggleTimeFields() {
+      const mode = document.getElementById('time_mode').value;
+      document.getElementById('fixed_time_wrap').style.display = mode === 'fixed' ? 'flex' : 'none';
+      document.getElementById('range_start_wrap').style.display = mode === 'range' ? 'flex' : 'none';
+      document.getElementById('range_end_wrap').style.display = mode === 'range' ? 'flex' : 'none';
+    }
+
+    function refreshVariantVisibility() {
+      const randomVariant = document.getElementById('random_variant_mode').value === '1';
+      const enableImages = document.getElementById('enable_images').value === '1';
+      const enableButtons = document.getElementById('enable_buttons').value === '1';
+
+      const variantsHeader = document.getElementById('variants_header');
+      if (variantsHeader) {
+        variantsHeader.style.display = randomVariant ? 'block' : 'none';
+      }
+
+      document.querySelectorAll('.variant-title').forEach((title) => {
+        title.style.display = randomVariant ? 'block' : 'none';
+      });
+
+      document.querySelectorAll('.remove-variant-row').forEach((row, idx) => {
+        row.style.display = randomVariant && idx > 0 ? 'block' : 'none';
+      });
+
+      const separators = Array.from(document.querySelectorAll('.variant-separator'));
+      separators.forEach((sep, idx) => {
+        sep.style.display = (randomVariant || idx === 0) ? 'block' : 'none';
+      });
+
+      // Перед кнопками действий не показываем последнюю разделительную линию.
+      const visibleSeparators = separators.filter(sep => sep.style.display !== 'none');
+      if (visibleSeparators.length > 0) {
+        visibleSeparators[visibleSeparators.length - 1].style.display = 'none';
+      }
+
+      document.querySelectorAll('.image-fields').forEach(block => {
+        block.style.display = enableImages ? 'block' : 'none';
+      });
+      document.querySelectorAll('.button-field-row').forEach(block => {
+        block.style.display = enableButtons ? 'flex' : 'none';
+      });
+
+      document.getElementById('add_variant_btn').style.display = randomVariant ? 'inline-block' : 'none';
+    }
+
+    function removeVariantAt(idx) {
+      const title = document.querySelectorAll('.variant-title')[idx];
+      const sep = document.querySelectorAll('.variant-separator')[idx];
+      if (!title || !sep) return;
+
+      let node = title.nextElementSibling;
+      while (node && node !== sep) {
+        const next = node.nextElementSibling;
+        node.remove();
+        node = next;
+      }
+      title.remove();
+      sep.remove();
+    }
+
+    function ensureSingleVariantWhenNotRandom() {
+      const randomVariant = document.getElementById('random_variant_mode').value === '1';
+      if (randomVariant) return;
+
+      let titles = document.querySelectorAll('.variant-title');
+      while (titles.length > 1) {
+        removeVariantAt(titles.length - 1);
+        titles = document.querySelectorAll('.variant-title');
+      }
+      refreshVariantTitles();
+    }
+
+    function refreshVariantTitles() {
+      document.querySelectorAll('.variant-title').forEach((title, idx) => {
+        title.textContent = `Вариант ${idx + 1}`;
+      });
+    }
+
+    document.getElementById('time_mode').addEventListener('change', toggleTimeFields);
+    document.getElementById('random_variant_mode').addEventListener('change', function () {
+      ensureSingleVariantWhenNotRandom();
+      refreshVariantVisibility();
+    });
+    document.getElementById('enable_images').addEventListener('change', refreshVariantVisibility);
+    document.getElementById('enable_buttons').addEventListener('change', refreshVariantVisibility);
+
+    const variantsContainer = document.getElementById('variants_container');
+    variantsContainer.addEventListener('change', function (e) {
+      if (!e.target.classList.contains('upload-input')) return;
+      const input = e.target;
+      const file = input.files[0];
+      if (!file) return;
+      const wrapper = input.closest('.image-wrapper');
+      const preview = wrapper.querySelector('img.preview');
+      const removeBtn = wrapper.querySelector('.remove-image-btn');
+      const removeFlag = wrapper.querySelector('.remove-image-flag');
+      const imagePath = wrapper.querySelector('input[type="hidden"][name*="[image_path]"]');
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        if (preview) {
+          preview.src = ev.target.result;
+          preview.style.display = 'block';
+        }
+        if (input) {
+          input.style.display = 'block';
+        }
+        if (removeBtn) {
+          removeBtn.style.display = 'block';
+        }
+        if (removeFlag) {
+          removeFlag.value = '0';
+        }
+        if (imagePath) {
+          imagePath.value = '';
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    variantsContainer.addEventListener('click', function (e) {
+      if (e.target.classList.contains('remove-image-btn')) {
+        const wrapper = e.target.closest('.image-wrapper');
+        const preview = wrapper.querySelector('img.preview');
+        const upload = wrapper.querySelector('.upload-input');
+        const removeFlag = wrapper.querySelector('.remove-image-flag');
+        const imagePath = wrapper.querySelector('input[type="hidden"][name*="[image_path]"]');
+
+        if (preview) {
+          preview.src = '';
+          preview.style.display = 'none';
+        }
+        if (upload) {
+          upload.value = '';
+          upload.style.display = 'inline-block';
+        }
+        if (imagePath) {
+          imagePath.value = '';
+        }
+        if (removeFlag) {
+          removeFlag.value = '1';
+        }
+        e.target.style.display = 'none';
+        return;
+      }
+    });
+
+    variantsContainer.addEventListener('click', function (e) {
+      if (!e.target.classList.contains('remove-variant')) return;
+      const titles = Array.from(document.querySelectorAll('.variant-title'));
+      if (titles.length <= 1) {
+        alert('Нужен хотя бы один вариант.');
+        return;
+      }
+
+      const idx = Array.from(document.querySelectorAll('.remove-variant')).indexOf(e.target);
+      removeVariantAt(idx);
+
+      refreshVariantTitles();
+      refreshVariantVisibility();
+    });
+
+    toggleTimeFields();
+    ensureSingleVariantWhenNotRandom();
+    refreshVariantVisibility();
+
+    document.getElementById('add_variant_btn').addEventListener('click', function () {
+      const idx = document.querySelectorAll('.variant-title').length;
+      const container = document.getElementById('variants_container');
+
+      const title = document.createElement('h4');
+      title.className = 'variant-title';
+      title.style.textAlign = 'center';
+      title.textContent = `Вариант ${idx + 1}`;
+      container.appendChild(title);
+
+      const textGroup = document.createElement('div');
+      textGroup.className = 'form-group';
+      textGroup.innerHTML = `
+        <label>Текст:</label>
+        <textarea name="variant[${idx}][text]" placeholder="Текст сообщения"></textarea>
+      `;
+      container.appendChild(textGroup);
+
+      const buttonTextGroup = document.createElement('div');
+      buttonTextGroup.className = 'form-group button-field-row';
+      buttonTextGroup.innerHTML = `
+        <label>Текст кнопки:</label>
+        <input type="text" name="variant[${idx}][button_text]" value="">
+      `;
+      container.appendChild(buttonTextGroup);
+
+      const buttonUrlGroup = document.createElement('div');
+      buttonUrlGroup.className = 'form-group button-field-row';
+      buttonUrlGroup.innerHTML = `
+        <label>URL кнопки:</label>
+        <input type="text" name="variant[${idx}][button_url]" value="" placeholder="https://">
+      `;
+      container.appendChild(buttonUrlGroup);
+
+      const imgWrap = document.createElement('div');
+      imgWrap.className = 'image-fields';
+      imgWrap.innerHTML = `
+        <div class="form-group">
+          <label>Картинка:</label>
+          <div class="image-wrapper">
+            <div class="image-container" style="margin:0;">
+              <img class="preview image" src="" style="max-width:200px; max-height:200px; margin-bottom:10px; display:none;">
+              <button class="delete-button remove-image-btn" type="button" style="display:none;"></button>
+            </div>
+            <input class="upload-input"
+                   type="file"
+                   name="variant[${idx}][upload]"
+                   accept=".jpg,.jpeg,.png,.gif"
+                   style="display:inline-block;">
+            <input type="hidden" name="variant[${idx}][image_path]" value="">
+            <input type="hidden" name="variant[${idx}][remove_image]" value="0" class="remove-image-flag">
+          </div>
+        </div>
+      `;
+      container.appendChild(imgWrap);
+
+      const removeRow = document.createElement('div');
+      removeRow.className = 'remove-variant-row';
+      removeRow.style.textAlign = 'center';
+      removeRow.innerHTML = `
+        <button type="button" class="button-delete remove-variant">Удалить вариант</button>
+      `;
+      container.appendChild(removeRow);
+
+      const sep = document.createElement('hr');
+      sep.className = 'level-separator variant-separator';
+      container.appendChild(sep);
+
+      refreshVariantVisibility();
+      refreshVariantTitles();
+    });
+  </script>
+</body>
+</html>

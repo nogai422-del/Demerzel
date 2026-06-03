@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Плановые сообщения</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container-centered">
+    <h2>Плановые сообщения</h2>
+
+    {% if saved %}
+      <p style="margin: 10px 0; color: green;">Сохранено ✅</p>
+    {% endif %}
+    {% if error %}
+      <p style="margin: 10px 0; color: #c62828;">{{ error }}</p>
+    {% endif %}
+    {% if csrf == "0" %}
+      <p style="margin: 10px 0; color: #c62828;">Ошибка CSRF. Обновите страницу и повторите действие.</p>
+    {% endif %}
+
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="action" value="create">
+      <div class="form-container">
+        <div class="form-group">
+          <label>Название:</label>
+          <input type="text" name="name" placeholder="Например: Утренний пост" required>
+        </div>
+      </div>
+      <button type="submit">Создать рассылку</button>
+    </form>
+
+    <hr class="level-separator">
+
+    {% if campaigns %}
+      <div style="text-align: left;">
+        {% for c in campaigns %}
+          <div style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;">
+            <div><b>{{ c.name }}</b> (#{{ c.id }})</div>
+            <div>Статус: {{ "включено" if c.is_enabled else "выключено" }}</div>
+            <div>
+              Время:
+              {% if c.time_mode == "fixed" %}
+                ежедневно в {{ c.fixed_time }}
+              {% else %}
+                ежедневно случайно с {{ c.range_start }} до {{ c.range_end }}
+              {% endif %}
+            </div>
+            <div>Последняя отправка: {{ c.last_sent_date or "ещё не было" }}</div>
+
+            <div style="margin-top: 10px;">
+              <a href="/scheduled_messages/{{ c.id }}">Настроить рассылку</a>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 8px; justify-content: center;">
+              <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="action" value="toggle">
+                <input type="hidden" name="campaign_id" value="{{ c.id }}">
+                <button type="submit">{{ "Отключить" if c.is_enabled else "Включить" }}</button>
+              </form>
+
+              <form method="POST" onsubmit="return confirm('Удалить рассылку и все её варианты?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="campaign_id" value="{{ c.id }}">
+                <button class="button-delete" type="submit">Удалить</button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>Рассылок пока нет.</p>
+    {% endif %}
+
+    <p>
+      <a href="{{ url_for('index') }}">Главная</a> |
+      <a href="{{ url_for('auth.logout') }}">Выход</a>
+    </p>
+  </div>
+</body>
+</html>

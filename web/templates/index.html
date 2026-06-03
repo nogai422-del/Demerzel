@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container-centered">
+        <h2>Выберите, что редактировать:</h2>
+
+        <ul style="text-align: left; padding-left: 0; list-style: none;">
+            <li><span>1. </span><a href="/edit_form">Блок вопросов</a></li>
+            <li><span>2. </span><a href="/edit_levels">Уровни пользователей</a></li>
+            <li><span>3. </span><a href="/images">Набор изображений</a></li>
+            <li><span>4. </span><a href="/edit_permission_messages">Сообщения о разрешениях</a></li>
+            <li><span>5. </span><a href="/edit_other">Все остальное</a></li>
+            <li><span>6. </span><a href="/scheduled_messages">Плановые сообщения</a></li>
+            <li><span>7. </span><a href="/edit_badwords">Список матов</a></li>
+        </ul>
+
+        <p><a href="/logout">Выйти</a></p>
+    </div>
+</body>
+</html>

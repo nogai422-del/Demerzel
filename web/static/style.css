@@ -1,0 +1,156 @@
+/* Основной контейнер для центрирования содержимого */
+.container-centered {
+    max-width: 1024px;
+    width: 85%;
+    margin: 16px auto;
+    background-color: #fff;  /* Белый фон */
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    text-align: center;
+}
+
+/* Задний фон */
+body {
+    font-family: Arial, sans-serif;
+    background: url('/static/images/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+}
+
+/* Унифицированные поля ввода */
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+/* Только textarea — растягивается по высоте */
+.form-group textarea {
+    resize: none;
+    min-height: 38px;
+    overflow-y: hidden;
+}
+
+/* Только input — не растягивается */
+.form-group input[type="text"] {
+    resize: none;
+}
+
+/* Кнопка */
+button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;  /* Добавлен отступ сверху */
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Красный стиль для кнопки удаления */
+.button-delete {
+    padding: 10px 20px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.button-delete:hover {
+    background-color: #e53935;
+}
+
+/* Ссылки */
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Общая обёртка для формы */
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: left;
+}
+
+/* Каждая строка формы */
+.form-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Метки слева от поля */
+.form-group label {
+    width: 170px; /* Уменьшено на ~20% */
+    font-weight: bold;
+    text-align: right;
+}
+
+/* Для textarea с блоком вопросов (на редактирование) */
+textarea[name="content"] {
+    min-height: 150px;  /* Минимальная высота для контента */
+    resize: none;   /* Разрешаем растягивать только по вертикали */
+    width: 100%;        /* По ширине — 100% */
+    padding: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-family: inherit;
+    overflow-y: hidden; /* Убираем полосы прокрутки */
+}
+
+/* Горизонтальная линия для отделения уровней */
+.level-separator {
+    border: 0;
+    border-top: 2px solid #ddd;  /* Легкая серая линия */
+    margin: 10px 0;  /* Отступы сверху и снизу */
+}
+
+.image-wrapper {
+    width: 100%; /* Ограничиваем максимальную ширину обёртки */
+}
+
+.container-centered ul li {
+    margin-bottom: 10px; /* Отступ снизу для каждого элемента списка */
+}
+
+.container-centered ul li a {
+    text-decoration: none; /* Убирает подчеркивание у ссылок, если нужно */
+}
+
+/* Для страницы с картинками */
+.image-container { position: relative; display: inline-block; margin: 10px; }
+.image { display: block; max-width: 160px; max-height: 160px; }
+.image-name { word-break: break-all; font-size: 12px; max-width: 160px; margin: 5px auto 0; }
+.delete-button {
+    position: absolute; top: -20px; right: 0;
+    width: 30px; height: 30px;
+    background-image: url('/static/images/delete.png');
+    background-size: contain; background-position: center; background-repeat: no-repeat;
+    border: none; padding: 0; cursor: pointer; z-index: 10;
+}

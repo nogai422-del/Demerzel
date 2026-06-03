@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Редактировать прочее</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container-centered">
+  <h2>Редактировать прочее</h2>
+
+  {% if saved %}
+    <p style="margin: 10px 0; color: green;">Сохранено ✅</p>
+  {% endif %}
+
+  {% if csrf == "0" %}
+    <p style="margin: 10px 0; color: #c62828;">Ошибка CSRF. Обновите страницу и повторите действие.</p>
+  {% endif %}
+
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="form-container">
+
+      <h3 style="text-align:center;">Приветственное сообщение</h3>
+      <div class="form-group">
+        <label>Текст приветствия:</label>
+        <textarea name="other[welcome_text]">{{ other.get('welcome_text','') }}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Текст кнопки:</label>
+        <input type="text" name="other[welcome_button]" value="{{ other.get('welcome_button','') }}">
+      </div>
+      <div class="form-group">
+        <label>URL кнопки:</label>
+        <input type="text" name="other[welcome_url]" value="{{ other.get('welcome_url','') }}" placeholder="https://">
+      </div>
+      <div class="form-group">
+        <label>Текст 2-й кнопки:</label>
+        <input type="text" name="other[welcome_button2]" value="{{ other.get('welcome_button2','') }}">
+      </div>
+
+      <div class="form-group">
+        <label>URL 2-й кнопки:</label>
+        <input type="text" name="other[welcome_url2]" value="{{ other.get('welcome_url2','') }}" placeholder="https://">
+      </div>
+
+      <hr class="level-separator">
+
+      <h3 style="text-align:center;">Информация о правилах</h3>
+      <div class="form-group">
+        <label>Текст сообщения:</label>
+        <textarea name="other[rules_text]">{{ other.get('rules_text','') }}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Текст кнопки:</label>
+        <input type="text" name="other[rules_button]" value="{{ other.get('rules_button','') }}">
+      </div>
+      <div class="form-group">
+        <label>URL кнопки:</label>
+        <input type="text" name="other[rules_url]" value="{{ other.get('rules_url','') }}" placeholder="https://">
+      </div>
+
+      <hr class="level-separator">
+
+      <h3 style="text-align:center;">Информация о рейтинге</h3>
+      <div class="form-group">
+        <label>Текст сообщения:</label>
+        <textarea name="other[rating_info_text]">{{ other.get('rating_info_text','') }}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Текст кнопки:</label>
+        <input type="text" name="other[rating_button]" value="{{ other.get('rating_button','') }}">
+      </div>
+      <div class="form-group">
+        <label>URL кнопки:</label>
+        <input type="text" name="other[rating_url]" value="{{ other.get('rating_url','') }}" placeholder="https://">
+      </div>
+
+      <hr class="level-separator">
+
+      <h3 style="text-align:center;">Информация о мифологии</h3>
+      <div class="form-group">
+        <label>Текст сообщения:</label>
+        <textarea name="other[myth_text]">{{ other.get('myth_text','') }}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Текст кнопки:</label>
+        <input type="text" name="other[myth_button]" value="{{ other.get('myth_button','') }}">
+      </div>
+      <div class="form-group">
+        <label>URL кнопки:</label>
+        <input type="text" name="other[myth_url]" value="{{ other.get('myth_url','') }}" placeholder="https://">
+      </div>
+
+      <hr class="level-separator">
+
+      <h3 style="text-align:center;">Необходимо сообщений для уведомлений о</h3>
+      <div class="form-group">
+        <label>Правилах:</label>
+        <input type="number" name="other[rules_reminder_message_number]" value="{{ other.get('rules_reminder_message_number','') }}">
+      </div>
+      <div class="form-group">
+        <label>Рейтинге:</label>
+        <input type="number" name="other[rating_reminder_message_number]" value="{{ other.get('rating_reminder_message_number','') }}">
+      </div>
+      <div class="form-group">
+        <label>Мифологии:</label>
+        <input type="number" name="other[myth_reminder_message_number]" value="{{ other.get('myth_reminder_message_number','') }}">
+      </div>
+
+      <hr class="level-separator">
+
+      <h3 style="text-align:center;">Таймер для отправки мудрости</h3>
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Время (минуты):</label>
+        <input type="number" min="0" name="other[wisdom_timer_minutes]" value="{{ other.get('wisdom_timer_minutes','') }}">
+      </div>
+
+      <div style="text-align: center;">
+        <div style="display: inline-block;">
+          <button type="submit">Сохранить</button>
+        </div>
+      </div>
+
+    </div>
+  </form>
+
+  <p><a href="/">На главную</a> | <a href="/logout">Выйти</a></p>
+</div>
+
+<script src="{{ url_for('static', filename='autoresize.js') }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const url = new URL(window.location.href);
+  if (url.searchParams.has('saved')) {
+    url.searchParams.delete('saved');
+    history.replaceState({}, '', url.toString());
+  }
+});
+</script>
+</body>
+</html>

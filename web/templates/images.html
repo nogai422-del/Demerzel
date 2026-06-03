@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Редактировать набор изображений</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('uploaded') || url.searchParams.has('deleted') || url.searchParams.has('csrf')) {
+        url.searchParams.delete('uploaded');
+        url.searchParams.delete('deleted');
+        url.searchParams.delete('csrf');
+        window.history.replaceState({}, '', url.toString());
+      }
+    });
+  </script>
+</head>
+
+<body>
+<div class="container-centered">
+  <h2>Загрузить изображение</h2>
+
+  {% if uploaded %}
+    {% if uploaded == '1' %}
+      <p style="margin:10px 0; color:green;">Изображение загружено</p>
+    {% else %}
+      <p style="margin:10px 0; color:red;">Не удалось загрузить изображение</p>
+    {% endif %}
+  {% endif %}
+
+  {% if deleted %}
+    {% if deleted == '1' %}
+      <p style="margin:10px 0; color:green;">Изображение удалено</p>
+    {% else %}
+      <p style="margin:10px 0; color:red;">Не удалось удалить изображение</p>
+    {% endif %}
+  {% endif %}
+
+  {% if csrf == '0' %}
+    <p style="margin:10px 0; color:red;">CSRF-проверка не пройдена. Обновите страницу и повторите.</p>
+  {% endif %}
+
+  <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="action" value="upload">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="file" name="image" accept=".jpg,.jpeg,.png,.gif" required>
+    <button type="submit">Загрузить</button>
+  </form>
+
+  <h3>Список изображений</h3>
+
+  <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+    {% for img in images %}
+      <div class="image-container">
+        <img
+          src="{{ url_for('image.serve_image') }}?type=images&img={{ img }}"
+          alt="{{ img }}"
+          class="image"
+        >
+        <p class="image-name">{{ img }}</p>
+
+        <form method="POST" onsubmit="return confirm('Вы уверены, что хотите удалить это изображение?');">
+          <input type="hidden" name="action" value="delete">
+          <input type="hidden" name="filename" value="{{ img }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="delete-button" type="submit"></button>
+        </form>
+      </div>
+    {% endfor %}
+  </div>
+
+  <p>
+    <a href="/">На главную</a> |
+    <a href="/logout">Выйти</a>
+  </p>
+</div>
+</body>
+</html>

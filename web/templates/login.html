@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container-centered">
+        <h2>Вход администратора</h2>
+
+        {% if error %}
+            <p style="color:red;">{{ error }}</p>
+        {% endif %}
+
+        <form method="POST">
+            <div style="margin-bottom: 15px;">
+                <label for="username">Логин:</label><br>
+                <input type="text" name="username" id="username" required>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label for="password">Пароль:</label><br>
+                <input type="password" name="password" id="password" required>
+            </div>
+
+            <button type="submit">Войти</button>
+        </form>
+    </div>
+</body>
+</html>

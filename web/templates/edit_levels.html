@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Редактировать уровни</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container-centered">
+  <h2>Редактировать уровни</h2>
+
+  {% if saved %}
+    <p style="margin: 10px 0; color: green;">Сохранено ✅</p>
+  {% endif %}
+
+  {% if csrf == "0" %}
+    <p style="margin: 10px 0; color: #c62828;">Ошибка CSRF. Обновите страницу и повторите действие.</p>
+  {% endif %}
+
+  <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="form-container">
+
+    {% for lvl in levels %}
+      <div class="form-group">
+        <label>Уровень {{ lvl.level }}:</label>
+        <input type="text"
+               name="levels[{{ lvl.level }}][points]"
+               value="{{ lvl.points }}"
+               placeholder="Очки">
+      </div>
+
+      <div class="form-group">
+        <label>Звание:</label>
+        <input type="text"
+               name="levels[{{ lvl.level }}][rank_name]"
+               value="{{ lvl.rank_name }}">
+      </div>
+
+      <div class="form-group">
+        <label>Сообщение:</label>
+        <textarea name="levels[{{ lvl.level }}][message]"
+                  placeholder="Используйте {user}">{{ lvl.message }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Изображение:</label>
+        <div class="image-wrapper">
+
+          {% if lvl.image_path %}
+            {% set filename = lvl.image_path.split('/')[-1] %}
+            <img class="preview"
+                 src="{{ url_for('image.serve_image') }}?type=levels&img={{ filename }}"
+                 style="max-width:200px; max-height:200px; display:block; margin-bottom:10px;">
+          {% else %}
+            <img class="preview"
+                 src=""
+                 style="max-width:200px; max-height:200px; display:block; margin-bottom:10px;">
+          {% endif %}
+
+          <input type="hidden"
+                 name="levels[{{ lvl.level }}][image_path]"
+                 value="{{ lvl.image_path }}">
+
+          <input class="upload-input"
+                 type="file"
+                 name="levels[{{ lvl.level }}][upload]"
+                 accept=".jpg,.jpeg,.png,.gif">
+
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Текст кнопки:</label>
+        <input type="text"
+               name="levels[{{ lvl.level }}][button_text]"
+               value="{{ lvl.button_text }}">
+      </div>
+
+      <div class="form-group">
+        <label>URL кнопки:</label>
+        <input type="text"
+               name="levels[{{ lvl.level }}][button_url]"
+               value="{{ lvl.button_url }}"
+               placeholder="https://">
+      </div>
+
+      <hr class="level-separator">
+    {% endfor %}
+
+    </div>
+
+    <button type="button" id="add-level">Добавить уровень</button>
+    <button type="button" id="delete-level" class="button-delete">Удалить уровень</button>
+    <button type="submit">Сохранить изменения</button>
+  </form>
+
+  <p>
+    <a href="/">На главную</a> |
+    <a href="/logout">Выйти</a>
+  </p>
+</div>
+
+<script src="{{ url_for('static', filename='autoresize.js') }}"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", ()=> {
+
+  // Превью изображений
+  document.querySelectorAll('.upload-input').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const file = inp.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = e=>{
+        const img = inp.closest('.image-wrapper').querySelector('img.preview');
+        if (img) img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  const fc  = document.querySelector(".form-container"),
+        add = document.getElementById("add-level"),
+        del = document.getElementById("delete-level");
+
+  let next = {{ levels|length + 1 }};
+
+  add.addEventListener("click", ()=>{
+    const html = `
+      <div class="form-group">
+        <label>Уровень ${next}:</label>
+        <input type="text" name="levels[${next}][points]" placeholder="Очки">
+      </div>
+      <div class="form-group">
+        <label>Звание:</label>
+        <input type="text" name="levels[${next}][rank_name]">
+      </div>
+      <div class="form-group">
+        <label>Сообщение:</label>
+        <textarea name="levels[${next}][message]" placeholder="Используйте {user}"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Изображение:</label>
+        <div class="image-wrapper">
+          <img class="preview" src="" style="max-width:200px;max-height:200px;display:block;margin-bottom:10px;">
+          <input type="hidden" name="levels[${next}][image_path]" value="">
+          <input class="upload-input" type="file" name="levels[${next}][upload]" accept=".jpg,.jpeg,.png,.gif">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Текст кнопки:</label>
+        <input type="text" name="levels[${next}][button_text]">
+      </div>
+      <div class="form-group">
+        <label>URL кнопки:</label>
+        <input type="text" name="levels[${next}][button_url]" placeholder="https://">
+      </div>
+      <hr class="level-separator">`;
+
+    fc.insertAdjacentHTML("beforeend", html);
+    next++;
+  });
+
+  del.addEventListener("click", ()=>{
+    const separators = fc.querySelectorAll(".level-separator");
+    if (separators.length > 0) {
+      const lastHr = separators[separators.length - 1];
+      for (let i = 0; i < 7; i++) {
+        lastHr.previousElementSibling.remove();
+      }
+      lastHr.remove();
+      next--;
+    }
+  });
+
+  // Убираем ?saved=1
+  const url = new URL(window.location.href);
+  if (url.searchParams.has('saved')) {
+    url.searchParams.delete('saved');
+    history.replaceState({}, '', url.toString());
+  }
+
+});
+</script>
+
+{% if error %}
+<script>
+  alert({{ error|tojson }});
+</script>
+{% endif %}
+
+</body>
+</html>

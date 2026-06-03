@@ -1,0 +1,8 @@
+aiogram
+aiosqlite
+dotenv
+flask[async]
+waitress
+emoji
+bs4
+Pillow

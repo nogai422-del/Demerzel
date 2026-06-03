@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Редактировать сообщения о разрешениях</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container-centered">
+  <h2>Редактировать сообщения о разрешениях</h2>
+
+  {% if saved %}
+    <p style="margin: 10px 0; color: green;">Сохранено ✅</p>
+  {% endif %}
+
+  {% if csrf == "0" %}
+    <p style="margin: 10px 0; color: #c62828;">Ошибка CSRF. Обновите страницу и повторите действие.</p>
+  {% endif %}
+
+  <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="form-container">
+
+{% for m in media_list %}
+{% if m.media_type != "sticker" %}
+
+    <h3 style="text-align:center;">
+        {{ m.title }} ({{ m.media_type }})
+    </h3>
+
+    <div class="form-group">
+      <label>Сообщение:</label>
+      <textarea
+          name="media[{{ m.media_type }}][message]"
+          placeholder="Используйте {user}"
+      >{{ m.message }}</textarea>
+    </div>
+
+    {% if m.media_type != "emoji" %}
+    <div class="form-group">
+        <label>Изображение:</label>
+
+        <div class="image-wrapper">
+        {% if m.image_path %}
+            {% set filename = m.image_path.split('/')[-1] %}
+            <img class="preview"
+                src="{{ url_for('image.serve_image') }}?type=permission&img={{ filename }}"
+                style="max-width:200px; max-height:200px; display:block; margin-bottom:10px;">
+        {% else %}
+            <img class="preview"
+                src=""
+                style="max-width:200px; max-height:200px; display:block; margin-bottom:10px;">
+        {% endif %}
+
+        <input type="hidden"
+                name="media[{{ m.media_type }}][image_path]"
+                value="{{ m.image_path or '' }}">
+
+        <input class="upload-input"
+                type="file"
+                name="media[{{ m.media_type }}][upload]"
+                accept=".jpg,.jpeg,.png,.gif">
+
+        </div>
+    </div>
+    {% else %}
+    <!-- emoji: без картинки, но image_path всё равно храним скрытым -->
+    <input type="hidden"
+            name="media[{{ m.media_type }}][image_path]"
+            value="{{ m.image_path or '' }}">
+    {% endif %}
+
+    <div class="form-group">
+      <label>Текст кнопки:</label>
+      <input type="text"
+             name="media[{{ m.media_type }}][button_text]"
+             value="{{ m.button_text or '' }}">
+    </div>
+
+    <div class="form-group">
+      <label>URL кнопки:</label>
+      <input type="text"
+             name="media[{{ m.media_type }}][button_url]"
+             value="{{ m.button_url or '' }}"
+             placeholder="https://">
+    </div>
+
+    <hr class="level-separator">
+
+{% endif %}
+{% endfor %}
+
+    </div>
+
+    <button type="submit">Сохранить изменения</button>
+  </form>
+
+  <p>
+    <a href="{{ url_for('index') }}">Главная</a> |
+    <a href="{{ url_for('auth.logout') }}">Выход</a>
+  </p>
+</div>
+
+<script src="{{ url_for('static', filename='autoresize.js') }}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  document.querySelectorAll('.upload-input').forEach(function (inp) {
+    inp.addEventListener('change', function () {
+      var file = inp.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var img = inp.closest('.form-group').querySelector('img.preview');
+        if (img) img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  const url = new URL(window.location.href);
+  if (url.searchParams.has('saved')) {
+    url.searchParams.delete('saved');
+    history.replaceState({}, '', url.toString());
+  }
+});
+</script>
+
+</body>
+</html>
